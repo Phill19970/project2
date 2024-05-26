@@ -1,0 +1,1023 @@
+openapi: 3.0.3
+info:
+  title: Javaughn's Capstone API Design
+  version: 1.0.0
+
+
+
+paths:
+  #Doctor API's
+  /doctors:
+    get:
+      tags:
+        - Doctor
+      summary: Get a list of all doctors
+      parameters:
+        - name: specialization
+          in: query
+          schema:
+            type: string
+        - name: department
+          in: query
+          schema:
+            type: string
+        - name: name
+          in: query
+          schema:
+            type: string
+        - name: size
+          in: query
+          schema:
+            type: integer
+        - name: page
+          in: query
+          schema:
+            type: integer
+
+      responses:
+        200:
+          description: Successfully return a list of doctors
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  doctors:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/doctor_profile_summary'
+
+        401:
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+
+    post:
+      tags:
+        - Doctor
+      summary: Create a new doctor
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/post_doctor'
+
+      responses:
+        201:
+          description: Record successfully created
+        404:
+          description: Doctor not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        401:
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+
+  /doctors/{doctorId}:
+    get:
+      tags:
+        - Doctor
+      summary: Return a specific doctor
+      parameters:
+        - name: doctorId
+          in: path
+          schema:
+            type: integer
+          required: true
+
+      responses:
+        200:
+          description: Successfully return a doctor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/doctor_profile'
+
+        404:
+          description: Doctor not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        401:
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+  #PATIENT API'S
+  /patients/{patientId}:
+
+    get:
+      tags:
+        - Patient
+      summary: Get a patient profile
+      parameters:
+        - name: patientId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Patient successfully returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/patient_profile'
+
+        404:
+          description: Patient with id not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        401:
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+  /patients:
+    get:
+      tags:
+        - Patient
+      summary: Get a list of all patients associated with the doctor
+      parameters:
+        - name: doctorId
+          in: query
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        200:
+          description: Successfully return a list of patients
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  patients:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/patient_profile_summary'
+
+        404:
+          description: Doctor with id not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        401:
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+
+    post:
+      tags:
+        - Patient
+      summary: Create a new patient for a specific doctor
+      parameters:
+        - name: doctorId
+          in: query
+          required: false
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/post_patient'
+
+      responses:
+        201:
+          description: Record successfully created
+        404:
+          description: Doctor not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        401:
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+
+
+  #APPOINTMENT API
+  /appointments:
+    post:
+      tags:
+        - Appointment
+      summary: Create a new appointment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/post_appointment'
+      responses:
+        201:
+          description: Appointment successfully created
+        409:
+          description: Appointment could not be scheduled due to conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        401:
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+    get:
+      tags:
+        - Appointment
+      summary: Get an appointment for a specific doctor / patient
+      parameters:
+        - name: doctorId
+          in: query
+          schema:
+            type: integer
+
+        - name: patientId
+          in: query
+          schema:
+            type: integer
+
+      responses:
+        200:
+          description: Successfully returned the appointments of the queried id
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  appointments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/appointment'
+
+        404:
+          description: Queried id not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        401:
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+
+  /appointments/{appointmentId}:
+    put:
+      tags:
+        - Appointment
+      summary: Update an apointment
+      parameters:
+        - name: appointmentId
+          in: path
+          required: true
+          schema:
+            type: integer
+
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/post_appointment'
+
+      responses:
+        200:
+          description: Successully updated
+        404:
+          description: Appointment with id not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        409:
+          description: Appointment could not be scheduled due to conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+
+        401:
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+
+  #Medical API
+  /medical-record/{patientId}:
+    get:
+      tags:
+        - Medical Record
+      summary: Returns a patient medical records
+      parameters:
+        - name: patientId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Successfully returns a patient medical records
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  medical_record:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/medical_record'
+        404:
+          description: Patient with id not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        401:
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+    post:
+      tags:
+        - Medical Record
+      summary: Create a medical record for the patient
+      parameters:
+        - name: patientId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/post_medical_record'
+      responses:
+        201:
+          description: Record successfully created
+        404:
+          description: Patient not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        401:
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+
+
+  #Expense API
+  /expenses/{expenseId}:
+    get:
+      tags:
+        - Expense
+      summary: Returns a specific expense
+      parameters:
+        - name: expenseId
+          in: path
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        200:
+          description: Successfully return a expense
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/expense'
+
+        404:
+          description: Expense not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        401:
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+
+    put:
+      tags:
+        - Expense
+      summary: Updates a specific expense
+      parameters:
+        - name: expenseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/expense'
+      responses:
+        200:
+          description: Successfully updated a expense
+
+        404:
+          description: Expense not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        401:
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+
+  /expense/{patientId}:
+    post:
+      tags:
+        - Expense
+      summary: Add an expense to a patient
+      parameters:
+        - name: patientId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/post_expense'
+
+      responses:
+        201:
+          description: Successfully added the expense to the user
+
+        404:
+          description: Patient not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        401:
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+
+  /expenses:
+    get:
+      tags:
+        - Expense
+      summary: Get a list of the patient's expenses
+      parameters:
+        - name: patientId
+          in: query
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        200:
+          description: Returns a object with list of user expenses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  expenses:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/expense'
+
+        404:
+          description: Patient not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        401:
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+
+components:
+  schemas:
+    #Error Schema
+    error:
+      type: object
+      properties:
+        status:
+          type: integer
+        message:
+          type: string
+        details:
+          type: string
+        timestamp:
+          type: string
+
+        #MAIN SCHEMAS
+
+    #Availability Schema
+    availability:
+      type: array
+      items:
+        properties:
+          day:
+            type: string
+          start_time:
+            type: string
+          end_time:
+            type: string
+
+
+    #Doctor Schema
+    doctor_profile:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        phone_number:
+          type: integer
+        biography:
+          type: string
+        specialization:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+        department:
+          type: string
+        availability:
+          $ref: '#/components/schemas/availability'
+
+    #Appointment Schema
+    appointment:
+      type: object
+      properties:
+        id:
+          type: integer
+        doctor_id: #Relationship
+          type: integer
+        patient_id: #Relationship
+          type: integer
+        date:
+          type: string
+        start_time:
+          type: string
+        end_time:
+          type: string
+        reason:
+          type: string
+        medical: #Relationship
+          $ref: '#/components/schemas/medical_record'
+
+    #Patient Schema
+    patient_profile:
+      type: object
+      properties:
+        id:
+          type: integer
+        doctor_id:
+          type: integer
+        name:
+          type: string
+        address:
+          type: string
+        phone_number:
+          type: string
+        email:
+          type: string
+        age:
+          type: integer
+        blood_group:
+          type: string
+        religion:
+          type: string
+        occupation:
+          type: string
+        gender:
+          type: string
+        maritial_status:
+          type: string
+        description:
+          type: string
+    #        appointments: #Relationship
+    #          type: array
+    #          items:
+    #            $ref: '#/components/schemas/appointment'
+
+    #Prescription Schema
+    prescription:
+      type: object
+      properties:
+        id:
+          type: integer
+        medical_id:
+          type: integer
+        medication:
+          type: string
+        start_date:
+          type: string
+        end_date:
+          type: string
+        dosage:
+          type: integer
+        total:
+          type: integer
+
+    #Medical Record Schema
+    medical_record:
+      type: object
+      properties:
+        id:
+          type: integer
+        doctor_id:
+          type: integer
+        patient_id:
+          type: integer
+        appointment_id:
+          type: integer
+        check_in_date:
+          type: string
+        disease:
+          type: string
+        status:
+          type: string
+        room_no:
+          type: integer
+        prescriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/prescription'
+
+    #Expense Schema
+    expense:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        amount:
+          type: number
+        date:
+          type: string
+        paid:
+          type: boolean
+
+
+    #SUMMARY SCHEMAS
+
+    #Doctor Summary Schema - Return a limited fields when listing all objects
+    doctor_profile_summary:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        department:
+          type: string
+        biography:
+          type: string
+
+    #Patient Summary Schema - Return a limited fields when listing all patients belonging to a doctor
+    patient_profile_summary:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        medical:
+          $ref: '#/components/schemas/medical_record'
+
+
+    #POST SCHEMAS
+
+    #POST Appointment Schema
+    post_appointment:
+      type: object
+      properties:
+        doctor_id:
+          type: integer
+        patient_id:
+          type: integer
+        date:
+          type: string
+        start_time:
+          type: string
+        end_time:
+          type: string
+        reason:
+          type: string
+
+
+    #POST Medical Record
+    post_medical_record:
+      type: object
+      properties:
+        doctor_id:
+          type: integer
+        patient_id:
+          type: integer
+        appointment_id:
+          type: integer
+        check_in_date:
+          type: string
+        disease:
+          type: string
+        status:
+          type: string
+        room_no:
+          type: integer
+        prescriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/prescription_post'
+
+    #POST prescription
+    prescription_post:
+      type: object
+      properties:
+        medication:
+          type: string
+        start_date:
+          type: string
+        end_date:
+          type: string
+        dosage:
+          type: integer
+        total:
+          type: integer
+
+
+    post_expense:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        amount:
+          type: number
+
+    post_patient:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        phone_number:
+          type: string
+        email:
+          type: string
+        age:
+          type: integer
+        blood_group:
+          type: string
+        religion:
+          type: string
+        occupation:
+          type: string
+        gender:
+          type: string
+        martial_status:
+          type: string
+        description:
+          type: string
+        password:
+          type: string
+
+    post_doctor:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        phone_number:
+          type: string
+        email:
+          type: string
+        age:
+          type: integer
+        gender:
+          type: string
+        specialization:
+          type: string
+        biography:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+        password:
+          type: string
+
+    #PUT
+    put_medical_record:
+      type: object
+      properties:
+        doctor_id:
+          type: integer
+        patient_id:
+          type: integer
+        appointment_id:
+          type: integer
+        check_in_date:
+          type: string
+        disease:
+          type: string
+        status:
+          type: string
+        room_no:
+          type: integer
+        prescriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/prescription'
+        
+        
+        
+  

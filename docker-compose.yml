@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:15
+    restart: always
+    ports:
+      - '5432:5432'
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: capstone
+      POSTGRES_DB: capstone
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
